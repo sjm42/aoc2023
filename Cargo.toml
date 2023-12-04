@@ -2,7 +2,7 @@
 
 [package]
 name = "aoc2023"
-version = "1.0.0"
+version = "1.0.2"
 authors = ["Sami J. Mäkinen <sjm@iki.fi>"]
 description = "FMI get temperature reading"
 repository = "https://github.com/sjm42/aoc2023"
