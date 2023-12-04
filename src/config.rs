@@ -12,6 +12,9 @@ pub struct OptsCommon {
     pub debug: bool,
     #[arg(short, long)]
     pub trace: bool,
+
+    #[arg(long)]
+    pub max_iter: Option<usize>,
 }
 
 impl OptsCommon {
