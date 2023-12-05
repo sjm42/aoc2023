@@ -1,7 +1,8 @@
-// bin/sjmb.rs
+// bin/day03.rs
+
+use aoc2023::*;
 
 use anyhow::anyhow;
-use aoc2023::*;
 use clap::Parser;
 use colored::*;
 use log::*;
