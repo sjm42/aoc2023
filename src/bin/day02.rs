@@ -15,8 +15,9 @@ fn main() -> anyhow::Result<()> {
     let limits = HashMap::from([("blue", 14), ("green", 13), ("red", 12)]);
     debug!("Limits: {limits:?}");
 
-    let (mut sum, mut sum_p) = (0, 0);
+    let (mut n, mut sum, mut sum_p) = (0, 0, 0);
     for line in io::stdin().lock().lines() {
+        n += 1;
         let line = line?;
         let line = line.trim();
 
@@ -55,6 +56,12 @@ fn main() -> anyhow::Result<()> {
         sum_p += p;
         if pass {
             sum += id;
+        }
+
+        if let Some(max) = opts.max_iter {
+            if n >= max {
+                break;
+            }
         }
     }
 
