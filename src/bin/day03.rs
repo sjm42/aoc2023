@@ -172,7 +172,7 @@ fn main() -> anyhow::Result<()> {
         }
         if nums.len() == 2 {
             valid_gears.push((*row, *idx));
-            let gear_nums = nums.values().map(|n| *n).collect::<Vec<_>>();
+            let gear_nums = nums.values().copied().collect::<Vec<_>>();
             let (a, b) = (gear_nums[0], gear_nums[1]);
             let mul = a * b;
             debug!("BOOM found gear[{row},{idx}]: nums = {a} * {b} = {mul}");
@@ -205,9 +205,7 @@ fn main() -> anyhow::Result<()> {
         // print each line with hilite/color
         for (i, l) in lines.iter().enumerate() {
             l.chars().enumerate().for_each(|(j, c)| {
-                if hilite[i][j] {
-                    print!("{}", c.to_string().as_str().red());
-                } else if gears_v[i][j] {
+                if hilite[i][j] || gears_v[i][j] {
                     print!("{}", c.to_string().as_str().red());
                 } else if gears[i][j] {
                     print!("{}", c.to_string().as_str().green());
