@@ -5,6 +5,7 @@ use aoc2023::*;
 use clap::Parser;
 use colored::*;
 use log::*;
+use std::collections::HashMap;
 use std::io::{self, BufRead};
 use std::str;
 
@@ -24,6 +25,7 @@ fn main() -> anyhow::Result<()> {
     let mut ctype_map = Vec::new();
     let mut found_nums = Vec::new();
     let mut lines = Vec::new();
+    let mut found_gears = Vec::new();
 
     let mut n = 0;
     for line in io::stdin().lock().lines() {
@@ -41,6 +43,9 @@ fn main() -> anyhow::Result<()> {
             } else if chr.is_ascii_digit() {
                 CharType::Num
             } else if chr.is_ascii_punctuation() {
+                if chr == '*' {
+                    found_gears.push((n + 1, idx));
+                }
                 CharType::Sym
             } else {
                 return Err(anyhow!("Illegal char {chr} at [{n}][{idx}]"));
@@ -85,20 +90,21 @@ fn main() -> anyhow::Result<()> {
             }
         }
     }
-    debug!("Found nums: {found_nums:?}");
+    debug!("Found nums (#{n}): {found_nums:?}", n = found_nums.len());
+    debug!("Found gears (#{n}): {found_gears:?}", n = found_gears.len());
 
     // Assumption: all input lines are equal length
     // We are adding "empty" lines as the first and last one to avoid index overruns
-    let sz = ctype_map[0].len();
+    let line_sz = ctype_map[0].len();
 
-    let mut pad = Vec::with_capacity(sz);
-    (0..sz).for_each(|_| pad.push(CharType::Dot));
+    let mut pad = Vec::with_capacity(line_sz);
+    (0..line_sz).for_each(|_| pad.push(CharType::Dot));
     trace!("Pad: {pad:?}");
     ctype_map.insert(0, pad.clone());
     ctype_map.push(pad);
 
-    let mut lpad = Vec::with_capacity(sz);
-    (0..sz).for_each(|_| lpad.push(b'.'));
+    let mut lpad = Vec::with_capacity(line_sz);
+    (0..line_sz).for_each(|_| lpad.push(b'.'));
     let lpad = str::from_utf8(lpad.as_slice())?;
     trace!("Lpad: {lpad}");
     lines.insert(0, lpad.to_string());
@@ -108,22 +114,34 @@ fn main() -> anyhow::Result<()> {
     trace!("ctype_map[{map_sz}]:\n{ctype_map:?}");
 
     let mut sum = 0;
+    let mut num_pos = Vec::with_capacity(map_sz);
+    (0..map_sz).for_each(|_| {
+        let mut v = Vec::with_capacity(line_sz);
+        (0..line_sz).for_each(|_| v.push(None));
+        num_pos.push(v);
+    });
+
     let mut valid_nums = Vec::new();
     for (num, row, start, size) in found_nums {
-        debug!("Checking {num} at ({row}, {start}) len {size}");
+        let numid = format!("{row}/{start}");
+        (start..start + size).for_each(|i| {
+            num_pos[row][i] = Some((numid.clone(), num));
+        });
+
+        trace!("Checking {num} at ({row}, {start}) len {size}");
         if ctype_map[row][start - 1] == CharType::Sym
             || ctype_map[row][start + size] == CharType::Sym
         {
-            debug!("PASS at own row{row}");
+            trace!("PASS at own row{row}");
             valid_nums.push((num, row, start, size));
             sum += num;
             continue;
         }
         'outer: for r in [row - 1, row + 1] {
             for i in (start - 1)..(start + size + 1) {
-                debug!("Checking row{r}[{i}]");
+                trace!("Checking row{r}[{i}]");
                 if ctype_map[r][i] == CharType::Sym {
-                    debug!("PASS at row{r}[{i}]");
+                    trace!("PASS at row{r}[{i}]");
                     valid_nums.push((num, row, start, size));
                     sum += num;
                     break 'outer;
@@ -131,26 +149,67 @@ fn main() -> anyhow::Result<()> {
             }
         }
     }
-    info!("Valid nums: {valid_nums:?}");
+    info!("Valid nums (#{n}): {valid_nums:?}", n = valid_nums.len());
+
+    let mut gear_sum = 0;
+    let mut valid_gears = Vec::new();
+    for (row, idx) in found_gears.iter() {
+        let mut nums = HashMap::new();
+        for (r, i) in [
+            (*row - 1, *idx - 1),
+            (*row - 1, *idx),
+            (*row - 1, *idx + 1),
+            (*row, *idx - 1),
+            (*row, *idx + 1),
+            (*row + 1, *idx - 1),
+            (*row + 1, *idx),
+            (*row + 1, *idx + 1),
+        ] {
+            if let Some((numid, num)) = &num_pos[r][i] {
+                nums.insert(numid.clone(), *num);
+            }
+        }
+        if nums.len() == 2 {
+            valid_gears.push((*row, *idx));
+            let gear_nums = nums.values().map(|n| *n).collect::<Vec<_>>();
+            let (a, b) = (gear_nums[0], gear_nums[1]);
+            let mul = a * b;
+            debug!("BOOM found gear[{row},{idx}]: nums = {a} * {b} = {mul}");
+            gear_sum += mul;
+        } else {
+            debug!("Invalid gear at [{row},{idx}]");
+        }
+    }
+    info!("Valid gears (#{n}): {valid_gears:?}", n = valid_gears.len());
 
     if opts.debug {
-        // populate a hilite matrix
+        // populate a hilite + gears matrices
         let mut hilite = Vec::with_capacity(lines.len());
+        let mut gears = Vec::with_capacity(lines.len());
+        let mut gears_v = Vec::with_capacity(lines.len());
         for l in lines.iter() {
             let sz = l.len();
             let mut h = Vec::with_capacity(sz);
             (0..sz).for_each(|_| h.push(false));
-            hilite.push(h);
+            hilite.push(h.clone());
+            gears.push(h.clone());
+            gears_v.push(h);
         }
-
         for (_num, row, start, size) in valid_nums {
             (start..start + size).for_each(|i| hilite[row][i] = true);
         }
-        // print each line with hilite
+        found_gears.iter().for_each(|(r, i)| gears[*r][*i] = true);
+        valid_gears.iter().for_each(|(r, i)| gears_v[*r][*i] = true);
+
+        // print each line with hilite/color
         for (i, l) in lines.iter().enumerate() {
             l.chars().enumerate().for_each(|(j, c)| {
                 if hilite[i][j] {
                     print!("{}", c.to_string().as_str().red());
+                } else if gears_v[i][j] {
+                    print!("{}", c.to_string().as_str().red());
+                } else if gears[i][j] {
+                    print!("{}", c.to_string().as_str().green());
                 } else {
                     print!("{c}");
                 }
@@ -160,6 +219,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     println!("Sum: {sum}");
+    println!("Gear sum: {gear_sum}");
 
     Ok(())
 }
