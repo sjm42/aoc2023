@@ -1,11 +1,10 @@
 // bin/day01.rs
 
-use aoc2023::*;
+use std::io::{self, BufRead};
 
 use anyhow::anyhow;
-use clap::Parser;
-use log::*;
-use std::io::{self, BufRead};
+
+use aoc2023::*;
 
 const NUMS: [(&str, u32); 9] = [
     ("one", 1),
@@ -21,7 +20,7 @@ const NUMS: [(&str, u32); 9] = [
 
 fn main() -> anyhow::Result<()> {
     let mut opts = OptsCommon::parse();
-    opts.finish()?;
+    opts.finalize()?;
     opts.start_pgm(env!("CARGO_BIN_NAME"));
 
     let (mut n, mut sum) = (0, 0);

@@ -1,15 +1,14 @@
 // bin/day05.rs
 
-use aoc2023::*;
-
-use anyhow::anyhow;
-use clap::Parser;
-use log::*;
 use std::{
     cmp::Ordering,
     collections::HashMap,
     io::{self, BufRead},
 };
+
+use anyhow::anyhow;
+
+use aoc2023::*;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 #[repr(u8)]
@@ -236,7 +235,7 @@ pub fn hand_cmp2(a: &Hand, b: &Hand) -> Ordering {
 
 fn main() -> anyhow::Result<()> {
     let mut opts = OptsCommon::parse();
-    opts.finish()?;
+    opts.finalize()?;
     opts.start_pgm(env!("CARGO_BIN_NAME"));
 
     let mut hands = Vec::new();

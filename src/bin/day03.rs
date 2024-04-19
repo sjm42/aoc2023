@@ -1,14 +1,13 @@
 // bin/day03.rs
 
-use aoc2023::*;
-
-use anyhow::anyhow;
-use clap::Parser;
-use colored::*;
-use log::*;
 use std::collections::HashMap;
 use std::io::{self, BufRead};
 use std::str;
+
+use anyhow::anyhow;
+use colored::*;
+
+use aoc2023::*;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 #[repr(u8)]
@@ -20,7 +19,7 @@ pub enum CharType {
 
 fn main() -> anyhow::Result<()> {
     let mut opts = OptsCommon::parse();
-    opts.finish()?;
+    opts.finalize()?;
     opts.start_pgm(env!("CARGO_BIN_NAME"));
 
     let mut ctype_map = Vec::new();

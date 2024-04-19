@@ -1,16 +1,15 @@
 // bin/day02.rs
 
-use aoc2023::*;
-
-use anyhow::anyhow;
-use clap::Parser;
-use log::*;
 use std::collections::HashMap;
 use std::io::{self, BufRead};
 
+use anyhow::anyhow;
+
+use aoc2023::*;
+
 fn main() -> anyhow::Result<()> {
     let mut opts = OptsCommon::parse();
-    opts.finish()?;
+    opts.finalize()?;
     opts.start_pgm(env!("CARGO_BIN_NAME"));
 
     let limits = HashMap::from([("blue", 14), ("green", 13), ("red", 12)]);

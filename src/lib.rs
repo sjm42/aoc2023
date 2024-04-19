@@ -1,6 +1,10 @@
 // lib.rs
 
-pub mod config;
+pub use clap::Parser;
+pub use tracing::*;
+
 pub use config::*;
+
+pub mod config;
 
 // EOF
