@@ -4,7 +4,7 @@
 name = "aoc2023"
 version = "1.8.0"
 authors = ["Sami J. Mäkinen <sjm@iki.fi>"]
-description = "FMI get temperature reading"
+description = "Advent of Code 2023"
 repository = "https://github.com/sjm42/aoc2023"
 readme = "README.md"
 keywords = ["AOC"]
